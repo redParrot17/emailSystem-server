@@ -9,7 +9,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.*;
 import java.util.Base64;
 
-public class EcoCryptography {
+public class HybridCryptography {
 
     static KeyPair generateKeys() throws NoSuchAlgorithmException {
         KeyPairGenerator rsaKeyGen = KeyPairGenerator.getInstance(SecuredRSAUsage.ALGORITHM_NAME);

@@ -96,7 +96,7 @@ public class TcpServer implements AutoCloseable, Runnable {
 
     public CompletableFuture<Void> start() throws ServerException {
         if (alive) throw new ServerException("Server is already running");
-        try { serverKeys = EcoCryptography.generateKeys();
+        try { serverKeys = HybridCryptography.generateKeys();
         } catch (NoSuchAlgorithmException e) {
             throw new ServerException("Unable to generate async encryption keys: " + e.getMessage());
         }
@@ -174,18 +174,18 @@ public class TcpServer implements AutoCloseable, Runnable {
         SecureRandom secRandom = new SecureRandom();
         secRandom.nextBytes(iv);
         GCMParameterSpec gcmParamSpec = new GCMParameterSpec(SecuredGCMUsage.TAG_BIT_LENGTH, iv);
-        String[] encryptedText = EcoCryptography.encrypt(message, key, gcmParamSpec, "eco.echotrace.77".getBytes());
+        String[] encryptedText = HybridCryptography.encrypt(message, key, gcmParamSpec, "eco.echotrace.77".getBytes());
         if (encryptedText == null || encryptedText.length != 2) return null;
         return new EncryptionPacket(encryptedText[1], packetType, gcmParamSpec, encryptedText[0]);
     }
 
     private String decryptEncryptionPacket(EncryptionPacket packet) throws Exception {
-        return EcoCryptography.decrypt(packet, serverKeys.getPrivate(), "eco.echotrace.77".getBytes());
+        return HybridCryptography.decrypt(packet, serverKeys.getPrivate(), "eco.echotrace.77".getBytes());
     }
 
     private String decryptEncryptionPacket(String json) throws Exception {
         EncryptionPacket packet = GSON.fromJson(json, EncryptionPacket.class);
-        return EcoCryptography.decrypt(packet, serverKeys.getPrivate(), "eco.echotrace.77".getBytes());
+        return HybridCryptography.decrypt(packet, serverKeys.getPrivate(), "eco.echotrace.77".getBytes());
     }
 
     public void sendText(PrintWriter outgoing, PublicKey key, String data) {
