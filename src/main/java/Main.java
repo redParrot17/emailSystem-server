@@ -1,4 +1,5 @@
 
+import email_system.EmailServer;
 import server.*;
 
 public class Main {
@@ -8,7 +9,7 @@ public class Main {
         TcpServer server = new TcpServer(7070, 0, 5, true);
         System.out.println("Server is alive!");
 
-        new HandleEmails(server);
+        new EmailServer(server).start();
 
     }
 
