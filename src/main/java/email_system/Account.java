@@ -10,6 +10,10 @@ public class Account {
     private final char[] password;
     private LinkedHashSet<Email> receivedEmails;
 
+    /**
+     * @param email_address unique email address to be associated with this account
+     * @param password      character array of the password to be associated with this account
+     */
     public Account(String email_address, char[] password) {
         this.email_address = email_address;
         //TODO: do something to password so that you don't store the real one

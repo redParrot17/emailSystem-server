@@ -1,4 +1,6 @@
 package server.listeners;
 
-public interface ServerListener {
-}
+/**
+ * Generic Listener class that all other server event listeners should extend
+ */
+public interface ServerListener { }

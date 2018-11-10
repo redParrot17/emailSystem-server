@@ -11,12 +11,26 @@ import java.util.Base64;
 
 public class HybridCryptography {
 
+    /**
+     * @return Asymmetric {@link KeyPair} used for RSA encryption/decryption
+     * @throws NoSuchAlgorithmException if someone messed with the code and changed
+     *                                  the algorithm to one that is invalid
+     */
     static KeyPair generateKeys() throws NoSuchAlgorithmException {
         KeyPairGenerator rsaKeyGen = KeyPairGenerator.getInstance(SecuredRSAUsage.ALGORITHM_NAME);
         rsaKeyGen.initialize(SecuredRSAUsage.RSA_KEY_LENGTH);
         return rsaKeyGen.generateKeyPair();
     }
 
+    /**
+     * Attempts to encrypt the string using both symmetric and asymmetric techniques
+     *
+     * @param input         String input that is to be encrypted
+     * @param key           {@link PublicKey} used for asymmetric encryption
+     * @param gcmParamSpec  GCM Parameter Specifications used for the encryption
+     * @param aadData       extra data tag to be included within the final encryption
+     * @return              String array of [ asymmetrically encrypted symmetric encryption key , symmetrically encrypted data ]
+     */
     static String[] encrypt(String input, PublicKey key, GCMParameterSpec gcmParamSpec, byte[] aadData) {
         SecretKey aesKey = null;
         try {
@@ -36,6 +50,15 @@ public class HybridCryptography {
         return null;
     }
 
+    /**
+     * Attempts to decrypt the string using both symmetric and asymmetric techniques
+     *
+     * @param packet     {@link EncryptionPacket} that contains the encrypted data
+     * @param key        {@link PrivateKey} used for the asymmetric decryption
+     * @param aadData    the extra data tag used during the encryption
+     * @throws Exception
+     * @return           the original decrypted String
+     */
     static String decrypt(EncryptionPacket packet, PrivateKey key, byte[] aadData) throws Exception {
         String encryptedKey = packet.getKey();
         String encryptedData = packet.getPayload();

@@ -2,6 +2,9 @@ package server.packets;
 
 import server.listener_references.Email;
 
+/**
+ * A wrapper for the {@link Email} class to be sent via an {@link EncryptionPacket}
+ */
 public class EmailPacket extends DataPacket {
 
     private String author;
@@ -10,6 +13,12 @@ public class EmailPacket extends DataPacket {
     private String message;
     private boolean hasRead;
 
+    /**
+     * @param author     the author of the email
+     * @param recipients the recipients of the email
+     * @param subject    the email's subject line
+     * @param message    the message the email contains
+     */
     public EmailPacket(String author, String[] recipients, String subject, String message) {
         super();
         this.author = author;
@@ -19,6 +28,10 @@ public class EmailPacket extends DataPacket {
         this.hasRead = false;
     }
 
+    /**
+     * Creates a deep copy of the {@code email}
+     * @param email the old email to be deep copied
+     */
     public EmailPacket(Email email) {
         super(email.getCreationTimestamp());
         this.author = email.getAuthor();

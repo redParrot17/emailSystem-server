@@ -2,6 +2,9 @@ package server.packets;
 
 import javax.crypto.spec.GCMParameterSpec;
 
+/**
+ * What is to be primarily sent through the network to the client
+ */
 public class EncryptionPacket {
 
     private String payload;
@@ -9,6 +12,13 @@ public class EncryptionPacket {
     private GCMParameterSpec gcmParamSpec;
     private String key;
 
+    /**
+     *
+     * @param payload       encrypted data String
+     * @param payloadType   {@link PacketType} indicating what the {@code payload} contains
+     * @param gcmParamSpec  the GCM parameter specifications used during encryption
+     * @param key           the asymmetrically encrypted symmetric encryption key for the {@code payload}
+     */
     public EncryptionPacket(String payload, PacketType payloadType, GCMParameterSpec gcmParamSpec, String key) {
         this.payload = payload;
         this.payloadType = payloadType;
@@ -30,6 +40,9 @@ public class EncryptionPacket {
         return key;
     }
 
+    /**
+     * Enum for the different types of data to be contained within the EncryptionPacket's payload
+     */
     public enum PacketType {
         TEXT, COMMAND, EMAIL
     }
