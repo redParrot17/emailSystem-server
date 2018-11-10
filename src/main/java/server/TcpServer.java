@@ -44,6 +44,9 @@ public class TcpServer implements AutoCloseable, Runnable {
     private int timeout;
     private int port;
 
+    /**
+     * @param port port number that the server is to connect to
+     */
     public TcpServer(int port) {
         listenerManager = new ServerListenerManager();
         executorService = null;
@@ -56,6 +59,10 @@ public class TcpServer implements AutoCloseable, Runnable {
         alive = false;
     }
 
+    /**
+     * @param port      port number that the server is to connect to
+     * @param timeout   how many milliseconds of zero activity until a client is automatically disconnected
+     */
     public TcpServer(int port, int timeout) {
         listenerManager = new ServerListenerManager();
         this.timeout = timeout > 0 ? timeout : 0;
@@ -68,6 +75,11 @@ public class TcpServer implements AutoCloseable, Runnable {
         alive = false;
     }
 
+    /**
+     * @param port      port number that the server is to connect to
+     * @param timeout   how many milliseconds of zero activity until a client is automatically disconnected
+     * @param backLog   how many connections are allowed
+     */
     public TcpServer(int port, int timeout, int backLog) {
         listenerManager = new ServerListenerManager();
         this.timeout = timeout > 0 ? timeout : 0;
@@ -80,6 +92,13 @@ public class TcpServer implements AutoCloseable, Runnable {
         alive = false;
     }
 
+    /**
+     * @param port              port number that the server is to connect to
+     * @param timeout           how many milliseconds of zero activity until a client is automatically disconnected
+     * @param backLog           how many connections are allowed
+     * @param startImmediately  should the server immediately connect and start
+     * @throws ServerException
+     */
     public TcpServer(int port, int timeout, int backLog, boolean startImmediately) throws ServerException {
         listenerManager = new ServerListenerManager();
         this.timeout = timeout > 0 ? timeout : 0;
@@ -94,6 +113,12 @@ public class TcpServer implements AutoCloseable, Runnable {
         if (startImmediately) start().join();
     }
 
+    /**
+     * Starts up the server if it is not already running
+     *
+     * @return an empty {@link CompletableFuture<Void>} when the server has finished starting up
+     * @throws ServerException  if something goes wrong during startup
+     */
     public CompletableFuture<Void> start() throws ServerException {
         if (alive) throw new ServerException("Server is already running");
         try { serverKeys = HybridCryptography.generateKeys();
@@ -169,6 +194,14 @@ public class TcpServer implements AutoCloseable, Runnable {
         close();
     }
 
+    /**
+     * Attempts to encrypt the data and wrap it in an {@link EncryptionPacket}
+     *
+     * @param message    data to be encrypted
+     * @param packetType what the encrypted data represents
+     * @param key        the {@link PublicKey} used for encryption
+     * @return           the completed {@link EncryptionPacket}
+     */
     private EncryptionPacket generateEncryptionPacket(String message, EncryptionPacket.PacketType packetType, PublicKey key) {
         byte iv[] = new byte[SecuredGCMUsage.IV_SIZE];
         SecureRandom secRandom = new SecureRandom();
@@ -179,15 +212,35 @@ public class TcpServer implements AutoCloseable, Runnable {
         return new EncryptionPacket(encryptedText[1], packetType, gcmParamSpec, encryptedText[0]);
     }
 
+    /**
+     * Attempts to decrypt the encryption packet back into the original content
+     *
+     * @param packet    the {@link EncryptionPacket} to be decrypted
+     * @return          the original decrypted data
+     * @throws Exception
+     */
     private String decryptEncryptionPacket(EncryptionPacket packet) throws Exception {
         return HybridCryptography.decrypt(packet, serverKeys.getPrivate(), "eco.echotrace.77".getBytes());
     }
 
+    /**
+     * Attempts to decrypt the encryption packet back into the original content
+     *
+     * @param json json data to be decrypted
+     * @throws Exception
+     */
     private String decryptEncryptionPacket(String json) throws Exception {
         EncryptionPacket packet = GSON.fromJson(json, EncryptionPacket.class);
         return HybridCryptography.decrypt(packet, serverKeys.getPrivate(), "eco.echotrace.77".getBytes());
     }
 
+    /**
+     * Sends a simple message to the client containing {@code data}
+     *
+     * @param outgoing  {@link PrintWriter} used for sending messages to the client
+     * @param key       {@link PublicKey} of the client used to encrypt the data
+     * @param data      {@link String} data to be sent to the client
+     */
     public void sendText(PrintWriter outgoing, PublicKey key, String data) {
         if (key == null || data == null || outgoing == null || !alive) return;
         EncryptionPacket packet = generateEncryptionPacket(data, EncryptionPacket.PacketType.TEXT, key);
@@ -195,6 +248,14 @@ public class TcpServer implements AutoCloseable, Runnable {
         if (packet != null) outgoing.println(Base64.encodeBase64String(json.getBytes()));
     }
 
+    /**
+     * Sends a command to the client
+     *
+     * @param outgoing  {@link PrintWriter} used to communicate to the client
+     * @param key       {@link PublicKey} of the client used to encrypt the data
+     * @param command   the command to be sent
+     * @param arguments the command arguments
+     */
     public void sendCommand(PrintWriter outgoing, PublicKey key, String command, String arguments) {
         Objects.requireNonNull(outgoing);
         Objects.requireNonNull(key);
@@ -206,6 +267,13 @@ public class TcpServer implements AutoCloseable, Runnable {
         if (packet != null) outgoing.println(Base64.encodeBase64String(json.getBytes()));
     }
 
+    /**
+     * Sends an email to the specified client
+     *
+     * @param outgoing  {@link PrintWriter} to be used to communicate with the client
+     * @param key       {@link PublicKey} of the client used for encrypting the data
+     * @param email     {@link Email} that is to be sent
+     */
     public void sendEmail(PrintWriter outgoing, PublicKey key, Email email) {
         Objects.requireNonNull(outgoing);
         Objects.requireNonNull(key);
