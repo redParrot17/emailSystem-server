@@ -2,6 +2,7 @@ package email_system;
 
 import server.listener_references.Email;
 
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 
 public class Account {
@@ -40,8 +41,9 @@ public class Account {
      * @return
      */
     public LinkedHashSet<Email> getAllReceivedEmails() {
+
         //TODO: return all the emails. Should we return the actual ones or a deep copy?
-        return null;
+        return receivedEmails;
     }
 
     /**
@@ -50,8 +52,15 @@ public class Account {
      * @return
      */
     public LinkedHashSet<Email> getReceivedEmails(int count) {
+    	// I don't think I made this a deep copy but I tried
+    	
+    	LinkedHashSet<Email> copy = new LinkedHashSet<>();
+    	Iterator<Email> iter = receivedEmails.iterator();
+    	for (int i = 0; i < count; i++) {
+    		copy.add(iter.next());
+    	}
         //TODO: get a collection of the last "count" emails added to the list
-        return null;
+        return copy;
     }
 
     /**
@@ -59,7 +68,7 @@ public class Account {
      * @param email the {@link Email} to be added to this account
      */
     public void addEmail(Email email) {
-        //TODO: add the email to the list
+    	receivedEmails.add(email);
     }
 
     /**
@@ -67,7 +76,7 @@ public class Account {
      * @param email
      */
     public void removeEmail(Email email) {
-        //TODO: remove the email from the list
+        receivedEmails.remove(email);
     }
 
 }
