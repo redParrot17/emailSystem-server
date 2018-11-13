@@ -8,9 +8,11 @@ import server.listeners.CommandListener;
 import server.listeners.ConnectionListener;
 import server.listeners.EmailListener;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashSet;
+import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class EmailServer {
@@ -83,11 +85,15 @@ public class EmailServer {
      */
     private HashSet<Account> retrieveAllAccounts(String fileName) throws IOException {
         String fileContents = ""; // write all data from the file into this variable
-        //TODO: open the file and write all the data from it to the fileContents variable
+        File openFile = new File(fileName); 
+        Scanner readFile = new Scanner(openFile); 
+        while (readFile.hasNext()) { 
+        	fileContents += readFile.next();
+        }
 
         Type type = new TypeToken<HashSet<Account>>() {}.getType();
         HashSet<Account> accounts = allAccounts = new Gson().fromJson(fileContents, type);
-        //TODO: close the file
+        readFile.close();
 
         return accounts != null ? accounts : new HashSet<>();
     }
@@ -99,8 +105,9 @@ public class EmailServer {
      * @throws IOException If there was a problem saving the accounts to the specified file
      */
     private void saveAllAccounts(String fileName) throws IOException {
-        //TODO: open the specified file
+    	File openFile = new File(fileName);
         String json = new Gson().toJson(allAccounts); // the data to be written to the file
+        
         //TODO: write json to the file, save, and close
     }
 
