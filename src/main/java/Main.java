@@ -1,5 +1,5 @@
 
-import email_system.EmailServer2;
+import email_system.EmailServer;
 import server.*;
 
 import java.net.InetAddress;
@@ -12,7 +12,7 @@ public class Main {
         TcpServer server = new TcpServer(7070, 0, 5, InetAddress.getLocalHost(), true);
         System.out.println("Server is alive at " + server.getServerAddress().getHostAddress());
 
-        new EmailServer2(server).start();
+        new EmailServer(server).start();
 
     }
 
