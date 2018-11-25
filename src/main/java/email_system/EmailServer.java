@@ -10,6 +10,7 @@ import server.listeners.EmailListener;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.Scanner;
@@ -105,10 +106,15 @@ public class EmailServer {
      * @throws IOException If there was a problem saving the accounts to the specified file
      */
     private void saveAllAccounts(String fileName) throws IOException {
-    	File openFile = new File(fileName);
+    	PrintWriter outputFile = new PrintWriter("output.txt");
         String json = new Gson().toJson(allAccounts); // the data to be written to the file
-        
-        //TODO: write json to the file, save, and close
+        Scanner inputFile = new Scanner(json);
+        while (inputFile.hasNext()) {
+        	outputFile.printf(inputFile.next());
+        }
+        outputFile.flush();
+        outputFile.close();
+        inputFile.close();
     }
 
     /**
