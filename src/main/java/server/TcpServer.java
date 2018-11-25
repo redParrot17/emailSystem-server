@@ -17,10 +17,7 @@ import server.packets.EncryptionPacket;
 
 import javax.crypto.spec.GCMParameterSpec;
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
+import java.net.*;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
@@ -38,6 +35,7 @@ public class TcpServer implements AutoCloseable, Runnable {
     private ExecutorService executorService;
     private ExecutorService threadPool;
     private ServerSocket serverSocket;
+    private InetAddress inetAddress;
     private KeyPair serverKeys;
     private boolean alive;
     private int backlog;
@@ -51,6 +49,7 @@ public class TcpServer implements AutoCloseable, Runnable {
         listenerManager = new ServerListenerManager();
         executorService = null;
         serverSocket = null;
+        inetAddress = null;
         threadPool = null;
         serverKeys = null;
         this.port = port;
@@ -68,6 +67,7 @@ public class TcpServer implements AutoCloseable, Runnable {
         this.timeout = timeout > 0 ? timeout : 0;
         executorService = null;
         serverSocket = null;
+        inetAddress = null;
         threadPool = null;
         serverKeys = null;
         this.port = port;
@@ -83,6 +83,26 @@ public class TcpServer implements AutoCloseable, Runnable {
     public TcpServer(int port, int timeout, int backLog) {
         listenerManager = new ServerListenerManager();
         this.timeout = timeout > 0 ? timeout : 0;
+        executorService = null;
+        this.backlog = backLog;
+        serverSocket = null;
+        inetAddress = null;
+        threadPool = null;
+        serverKeys = null;
+        this.port = port;
+        alive = false;
+    }
+
+    /**
+     * @param port      port number that the server is to connect to
+     * @param timeout   how many milliseconds of zero activity until a client is automatically disconnected
+     * @param backLog   how many connections are allowed
+     * @param bindAddr  the local InetAddress the server will bind to. Leave null if you want to use "localhost"
+     */
+    public TcpServer(int port, int timeout, int backLog, InetAddress bindAddr) {
+        listenerManager = new ServerListenerManager();
+        this.timeout = timeout > 0 ? timeout : 0;
+        this.inetAddress = bindAddr;
         executorService = null;
         this.backlog = backLog;
         serverSocket = null;
@@ -105,12 +125,41 @@ public class TcpServer implements AutoCloseable, Runnable {
         executorService = null;
         this.backlog = backLog;
         serverSocket = null;
+        inetAddress = null;
         threadPool = null;
         serverKeys = null;
         this.port = port;
         alive = false;
-
         if (startImmediately) start().join();
+    }
+
+    /**
+     * @param port              port number that the server is to connect to
+     * @param timeout           how many milliseconds of zero activity until a client is automatically disconnected
+     * @param backLog           how many connections are allowed
+     * @param startImmediately  should the server immediately connect and start
+     * @param bindAddr          the local InetAddress the server will bind to. Leave null if you want to use "localhost"
+     * @throws ServerException
+     */
+    public TcpServer(int port, int timeout, int backLog, InetAddress bindAddr, boolean startImmediately) throws ServerException {
+        listenerManager = new ServerListenerManager();
+        this.timeout = timeout > 0 ? timeout : 0;
+        this.inetAddress = bindAddr;
+        executorService = null;
+        this.backlog = backLog;
+        serverSocket = null;
+        threadPool = null;
+        serverKeys = null;
+        this.port = port;
+        alive = false;
+        if (startImmediately) start().join();
+    }
+
+    /**
+     * @return the server's {@link InetAddress}
+     */
+    public InetAddress getServerAddress() {
+        return serverSocket.getInetAddress();
     }
 
     /**
@@ -127,7 +176,7 @@ public class TcpServer implements AutoCloseable, Runnable {
         }
         if (serverKeys == null) throw new ServerException("Failed to generate async encryption keys");
         try {
-            serverSocket = new ServerSocket(port, backlog);
+            serverSocket = new ServerSocket(port, backlog, inetAddress);
         } catch (IOException ioe) {
             throw new ServerException("Failed to create server: " + ioe.getMessage());
         }
@@ -432,7 +481,7 @@ public class TcpServer implements AutoCloseable, Runnable {
             } catch (SocketTimeoutException e) {
                 //System.out.println("[SOCKET][" + socket.getInetAddress().getHostAddress() + "](DISCONNECTED) socket connection timed out");
             } catch (SocketException e) {
-                if (!(e.getMessage().equals("Connection reset")))
+                if (!(e.getMessage().equals("Connection reset")) && !(e.getMessage().equals("Socket closed")))
                     e.printStackTrace();
             } catch (Exception e) {
                 e.printStackTrace();
