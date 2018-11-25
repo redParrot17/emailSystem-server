@@ -256,7 +256,7 @@ public class TcpServer implements AutoCloseable, Runnable {
         SecureRandom secRandom = new SecureRandom();
         secRandom.nextBytes(iv);
         GCMParameterSpec gcmParamSpec = new GCMParameterSpec(SecuredGCMUsage.TAG_BIT_LENGTH, iv);
-        String[] encryptedText = HybridCryptography.encrypt(message, key, gcmParamSpec, "eco.echotrace.77".getBytes());
+        String[] encryptedText = HybridCryptography.encrypt(message, key, serverKeys.getPrivate(), gcmParamSpec, "eco.echotrace.77".getBytes());
         if (encryptedText == null || encryptedText.length != 2) return null;
         return new EncryptionPacket(encryptedText[1], packetType, gcmParamSpec, encryptedText[0]);
     }
@@ -265,22 +265,24 @@ public class TcpServer implements AutoCloseable, Runnable {
      * Attempts to decrypt the encryption packet back into the original content
      *
      * @param packet    the {@link EncryptionPacket} to be decrypted
+     * @param publicKey the {@link PublicKey} of the client that sent the packet
      * @return          the original decrypted data
      * @throws Exception
      */
-    private String decryptEncryptionPacket(EncryptionPacket packet) throws Exception {
-        return HybridCryptography.decrypt(packet, serverKeys.getPrivate(), "eco.echotrace.77".getBytes());
+    private String decryptEncryptionPacket(EncryptionPacket packet, PublicKey publicKey) throws Exception {
+        return HybridCryptography.decrypt(packet, publicKey, serverKeys.getPrivate(), "eco.echotrace.77".getBytes());
     }
 
     /**
      * Attempts to decrypt the encryption packet back into the original content
      *
      * @param json json data to be decrypted
+     * @param publicKey the {@link PublicKey} of the client that sent the packet
      * @throws Exception
      */
-    private String decryptEncryptionPacket(String json) throws Exception {
+    private String decryptEncryptionPacket(String json, PublicKey publicKey) throws Exception {
         EncryptionPacket packet = GSON.fromJson(json, EncryptionPacket.class);
-        return HybridCryptography.decrypt(packet, serverKeys.getPrivate(), "eco.echotrace.77".getBytes());
+        return HybridCryptography.decrypt(packet, publicKey, serverKeys.getPrivate(), "eco.echotrace.77".getBytes());
     }
 
     /**
@@ -379,7 +381,7 @@ public class TcpServer implements AutoCloseable, Runnable {
         } catch (IOException e) {
             throw new ServerException("Communication failure while obtaining confirmation from the client that the server's public key was received: " + e.getMessage());
         }
-        try { message = decryptEncryptionPacket(new String(Base64.decodeBase64(confirmation)));
+        try { message = decryptEncryptionPacket(new String(Base64.decodeBase64(confirmation)), key);
         } catch (Exception e) {
             throw new ServerException("Failed to decrypt confirmation message from the client: " + e.getMessage());
         }
@@ -452,7 +454,7 @@ public class TcpServer implements AutoCloseable, Runnable {
 
                     String json = new String(Base64.decodeBase64(received));
                     EncryptionPacket packet = GSON.fromJson(json, EncryptionPacket.class);
-                    String message = decryptEncryptionPacket(packet);
+                    String message = decryptEncryptionPacket(packet, clientPublicKey);
 
                     switch (packet.getPayloadType()) {
                         case TEXT:

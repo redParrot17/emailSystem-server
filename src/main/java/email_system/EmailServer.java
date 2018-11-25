@@ -85,15 +85,16 @@ public class EmailServer {
      * @throws IOException If there was a problem retrieving the accounts
      */
     private HashSet<Account> retrieveAllAccounts(String fileName) throws IOException {
-        String fileContents = ""; // write all data from the file into this variable
+        StringBuilder fileContents = new StringBuilder(); // write all data from the file into this variable
         File openFile = new File(fileName); 
-        Scanner readFile = new Scanner(openFile); 
-        while (readFile.hasNext()) { 
-        	fileContents += readFile.next();
+        Scanner readFile = new Scanner(openFile);
+
+        while (readFile.hasNext()) {
+        	fileContents.append(readFile.next());
         }
 
         Type type = new TypeToken<HashSet<Account>>() {}.getType();
-        HashSet<Account> accounts = allAccounts = new Gson().fromJson(fileContents, type);
+        HashSet<Account> accounts = allAccounts = new Gson().fromJson(fileContents.toString(), type);
         readFile.close();
 
         return accounts != null ? accounts : new HashSet<>();
