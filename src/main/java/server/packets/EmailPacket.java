@@ -2,6 +2,8 @@ package server.packets;
 
 import server.listener_references.Email;
 
+import java.util.UUID;
+
 /**
  * A wrapper for the {@link Email} class to be sent via an {@link EncryptionPacket}
  */
@@ -12,6 +14,7 @@ public class EmailPacket extends DataPacket {
     private String subject;
     private String message;
     private boolean hasRead;
+    private String emailUUID;
 
     /**
      * @param author     the author of the email
@@ -26,6 +29,7 @@ public class EmailPacket extends DataPacket {
         this.subject = subject;
         this.message = message;
         this.hasRead = false;
+        emailUUID = UUID.randomUUID().toString();
     }
 
     /**
@@ -39,6 +43,7 @@ public class EmailPacket extends DataPacket {
         this.subject = email.getSubject();
         this.message = email.getMessage();
         this.hasRead = email.hasOpened();
+        this.emailUUID = email.getUUID();
     }
 
     public String getAuthor() {
@@ -59,5 +64,9 @@ public class EmailPacket extends DataPacket {
 
     public boolean hasOpened() {
         return hasRead;
+    }
+
+    public String getEmailUUID() {
+        return emailUUID;
     }
 }

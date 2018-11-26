@@ -2,12 +2,18 @@ package email_system;
 
 import server.listener_references.Email;
 
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 
 public class Account {
 
     private String email_address;
-    private final char[] password;
+    private byte[] password;
     private LinkedHashSet<Email> receivedEmails;
 
     /**
@@ -16,8 +22,14 @@ public class Account {
      */
     public Account(String email_address, char[] password) {
         this.email_address = email_address;
-        //TODO: do something to password so that you don't store the real one
-        this.password = password; // store the modified one
+        try {
+            byte[] pass = new String(password).getBytes("UTF-8");
+            MessageDigest sha3 = MessageDigest.getInstance("SHA3-512");
+            for (byte b : pass) { sha3.update(b); }
+            this.password = sha3.digest();
+        } catch (UnsupportedEncodingException | NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
         receivedEmails = new LinkedHashSet<>();
     }
 
@@ -31,8 +43,15 @@ public class Account {
      * @return true if the {@code password} matches the one connected to this account
      */
     public boolean checkPassword(char[] password) {
-        //TODO: do the same thing to the parameter that you did in the constructor
-        return this.password == password; // compare this.password to the modified one
+        try {
+            byte[] pass = new String(password).getBytes("UTF-8");
+            MessageDigest sha3 = MessageDigest.getInstance("SHA3-512");
+            for (byte b : pass) { sha3.update(b); }
+            return Arrays.equals(this.password, sha3.digest());
+        } catch (UnsupportedEncodingException | NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /**
@@ -40,8 +59,9 @@ public class Account {
      * @return
      */
     public LinkedHashSet<Email> getAllReceivedEmails() {
+
         //TODO: return all the emails. Should we return the actual ones or a deep copy?
-        return null;
+        return receivedEmails;
     }
 
     /**
@@ -50,8 +70,15 @@ public class Account {
      * @return
      */
     public LinkedHashSet<Email> getReceivedEmails(int count) {
+    	// I don't think I made this a deep copy but I tried
+    	
+    	LinkedHashSet<Email> copy = new LinkedHashSet<>();
+    	Iterator<Email> iter = receivedEmails.iterator();
+    	for (int i = 0; i < count; i++) {
+    		copy.add(iter.next());
+    	}
         //TODO: get a collection of the last "count" emails added to the list
-        return null;
+        return copy;
     }
 
     /**
@@ -59,7 +86,7 @@ public class Account {
      * @param email the {@link Email} to be added to this account
      */
     public void addEmail(Email email) {
-        //TODO: add the email to the list
+    	receivedEmails.add(email);
     }
 
     /**
@@ -67,7 +94,10 @@ public class Account {
      * @param email
      */
     public void removeEmail(Email email) {
-        //TODO: remove the email from the list
+        receivedEmails.remove(email);
     }
 
+    public Optional<Email> getEmailFromUUID(String uuid) {
+        return receivedEmails.stream().filter(email -> email.getUUID().equals(uuid)).findFirst();
+    }
 }
