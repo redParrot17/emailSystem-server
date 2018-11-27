@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import server.TcpServer;
 import server.listener_references.Connection;
+import server.listener_references.Email;
 import server.listeners.CommandListener;
 import server.listeners.ConnectionListener;
 import server.listeners.EmailListener;
@@ -194,19 +195,27 @@ public class EmailServer {
 
                 case "delete-email":
 
-                    //TODO: Retrieve the account from loggedInAccounts
-                    //TODO: Retrieve the email from the Account using the UUID stored in the command argument
-                    //TODO: Remove the email from the Account
+                	Account account_deleted = loggedInAccounts.get(command.getConnection());
+                	
+                	if (account_deleted.getEmailFromUUID(command.getArguments()).isPresent()) {
+                		Email email = account_deleted.getEmailFromUUID(command.getArguments()).get();
+                		//TODO: Remove the email from the Account
+                	}
 
                     try { saveAllAccounts(ACCOUNT_FILENAME);
                     } catch (IOException e) { e.printStackTrace(); }
                     break;
 
                 case "read-email":
-
-                    //TODO: Retrieve the Account from loggedInAccounts
+                	
+                	Account account_read = loggedInAccounts.get(command.getConnection());
                     //TODO: Retrieve the email from the Account using the UUID stored in the command argument
-                    //TODO: If the Email exists, call the Email#setHasOpened method and set it to true
+                	if (account_read.getEmailFromUUID(command.getArguments()).isPresent()) {
+                		Email email = account_read.getEmailFromUUID(command.getArguments()).get();
+                		//TODO: If the Email exists, call the Email#setHasOpened method and set it to true
+                	}
+                    
+                	
 
                     try { saveAllAccounts(ACCOUNT_FILENAME);
                     } catch (IOException e) { e.printStackTrace(); }
@@ -245,6 +254,13 @@ public class EmailServer {
             		}
             	}
             } 
+            for (int i = 0; i < recipients.length; i++) {
+            	for (int j = 0; j < recipients.length; j++) {
+            		if (allAccounts.contains(recipients[j])) {
+            			
+            		}
+            	}
+            }
             //TODO: For each unique recipient that exists within allAccounts, put a deep copy " Email newEmail = new Email( oldEmail ); " into the recipient's account
             //TODO: If the Account is located in loggedInAccounts, use the getConnectionFromAccount method to obtain the logged-in connection...
             //TODO: ...call the connection#replyEmail with email as the parameter
