@@ -65,7 +65,13 @@ public class Account {
     public LinkedHashSet<Email> getAllReceivedEmails() {
 
         //TODO: return all the emails. Should we return the actual ones or a deep copy?
-        return receivedEmails;
+    	// I think we should return a deep copy to avoid any possible tampering/loss of data
+    	LinkedHashSet<Email> receivedEmailsCopy = new LinkedHashSet<>();
+    	for (Email email : receivedEmails) {
+			receivedEmailsCopy.add(new Email(email));
+		}
+    	
+        return receivedEmailsCopy;
     }
 
     /**
