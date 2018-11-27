@@ -136,6 +136,12 @@ public class EmailServer {
             public void onConnectionRemoved(Connection connection) {
                 //TODO: Remove the connection and associated account from the HashMap
                 // what happens if the connection isn't in the hashmap?
+            	if (loggedInAccounts.contains(connection)) {
+            		loggedInAccounts.remove(connection);
+            	}
+            	else {
+            		return;
+            	}
             }
         };
     }
@@ -166,14 +172,17 @@ public class EmailServer {
                         if (account.checkPassword(pass)) {
 
                             //TODO: Call the connection#replyCommand method with "login" as the command and "valid" as the argument
+                        	connection.replyCommand("login", "valid");
                             //TODO: .put a new entry into loggedInAccounts with connection and account as the parameters
-
+                        	loggedInAccounts.put(connection, account);
                         } else {
                             connection.replyCommand("login", "invalid");
                         }
                     } catch (Exception e) {
 
-                        //TODO: Call the connection#replyCommand method with "login" as the command and "invalid" as the argument
+               
+                    	//TODO: Call the connection#replyCommand method with "login" as the command and "invalid" as the argument
+                    	connection.replyCommand("login", "invalid");
                     }
                     break;
 
@@ -187,15 +196,19 @@ public class EmailServer {
                     if (allAccounts.stream().filter(a -> a.getEmail_address().equals(credentials[0])).count() <= 0) {
 
                         //TODO: Create a new Account with credentials[0] and pass as the parameters
+                    	Account newAccount = new Account(credentials[0], pass);
                         //TODO: Add the new account to allAccounts
+                    	allAccounts.add(newAccount);
                         //TODO: .put a new entry into loggedInAccounts using connection and the newly created Account as the parameters
+                    	loggedInAccounts.putIfAbsent(connection, newAccount);
                         //TODO: Call the connection#replyCommand method with "login" as the command and "valid" as the argument
-
+                    	connection.replyCommand("login", "valid");
                         try { saveAllAccounts(ACCOUNT_FILENAME);
                         } catch (IOException e) { e.printStackTrace(); }
                     } else {
 
                         //TODO: Call the connection#replyCommand method with "login" as the command and "invalid" as the argument
+                    	connection.replyCommand("login", "invalid");
                     }
                     break;
 
@@ -238,6 +251,9 @@ public class EmailServer {
             String[] recipients = email.getRecipients();
 
             //TODO: Make every recipient all lowercase
+            for (String r : recipients) {
+            	r.toLowerCase();
+            }
             //TODO: Remove any duplicates from recipients
             //TODO: For each unique recipient that exists within allAccounts, put a deep copy " Email newEmail = new Email( oldEmail ); " into the recipient's account
             //TODO: If the Account is located in loggedInAccounts, use the getConnectionFromAccount method to obtain the logged-in connection...
