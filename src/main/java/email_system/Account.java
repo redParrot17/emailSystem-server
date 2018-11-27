@@ -33,6 +33,10 @@ public class Account {
         receivedEmails = new LinkedHashSet<>();
     }
 
+    /**
+     * 
+     * @return the users email address
+     */
     public String getEmail_address() {
         return email_address;
     }
