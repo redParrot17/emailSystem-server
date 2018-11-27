@@ -194,11 +194,12 @@ public class EmailServer {
                     break;
 
                 case "delete-email":
-
                 	Account account_deleted = loggedInAccounts.get(command.getConnection());
-                	
+
+                	// retrieve the email from the Account if it exists
                 	if (account_deleted.getEmailFromUUID(command.getArguments()).isPresent()) {
                 		Email email = account_deleted.getEmailFromUUID(command.getArguments()).get();
+
                 		//TODO: Remove the email from the Account
                 	}
 
@@ -207,15 +208,14 @@ public class EmailServer {
                     break;
 
                 case "read-email":
-                	
                 	Account account_read = loggedInAccounts.get(command.getConnection());
-                    //TODO: Retrieve the email from the Account using the UUID stored in the command argument
+
+                    // retrieve the email from the Account if it exists
                 	if (account_read.getEmailFromUUID(command.getArguments()).isPresent()) {
                 		Email email = account_read.getEmailFromUUID(command.getArguments()).get();
+
                 		//TODO: If the Email exists, call the Email#setHasOpened method and set it to true
                 	}
-                    
-                	
 
                     try { saveAllAccounts(ACCOUNT_FILENAME);
                     } catch (IOException e) { e.printStackTrace(); }
@@ -236,18 +236,19 @@ public class EmailServer {
      */
     private EmailListener buildEmailListener() {
         return email -> {
-
             String[] recipients = email.getRecipients();
 
-            //TODO: Make every recipient all lowercase
+            // Make every recipient lowercase
             for (int i = 0; i < recipients.length; i++) {
             	recipients[i] = recipients[i].toLowerCase();
             }
-            //TODO: Remove any duplicates from recipients
+
+            // Removes all the duplicate recipients
             HashSet<String> UniqueRecipients = new HashSet<String>();
             for (String r : recipients) {
             	UniqueRecipients.add(r);
             }
+
             //TODO: For each unique recipient that exists within allAccounts, put a deep copy " Email newEmail = new Email( oldEmail ); " into the recipient's account
             //TODO: If the Account is located in loggedInAccounts, use the getConnectionFromAccount method to obtain the logged-in connection...
             //TODO: ...call the connection#replyEmail with email as the parameter
