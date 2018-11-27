@@ -136,6 +136,12 @@ public class EmailServer {
             public void onConnectionRemoved(Connection connection) {
                 //TODO: Remove the connection and associated account from the HashMap
                 // what happens if the connection isn't in the hashmap?
+            	if (loggedInAccounts.contains(connection)) {
+            		loggedInAccounts.remove(connection);
+            	}
+            	else {
+            		return;
+            	}
             }
         };
     }
