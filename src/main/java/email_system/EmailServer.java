@@ -251,6 +251,9 @@ public class EmailServer {
             String[] recipients = email.getRecipients();
 
             //TODO: Make every recipient all lowercase
+            for (String r : recipients) {
+            	r.toLowerCase();
+            }
             //TODO: Remove any duplicates from recipients
             //TODO: For each unique recipient that exists within allAccounts, put a deep copy " Email newEmail = new Email( oldEmail ); " into the recipient's account
             //TODO: If the Account is located in loggedInAccounts, use the getConnectionFromAccount method to obtain the logged-in connection...
