@@ -5,16 +5,13 @@ import server.listener_references.Email;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Optional;
+import java.util.*;
 
 public class Account {
 
     private String email_address;
     private byte[] password;
-    private LinkedHashSet<Email> receivedEmails;
+    private SortedSet<Email> receivedEmails;
 
     /**
      * @param email_address unique email address to be associated with this account
@@ -30,7 +27,7 @@ public class Account {
         } catch (UnsupportedEncodingException | NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-        receivedEmails = new LinkedHashSet<>();
+        receivedEmails = new TreeSet<>();
     }
 
     /**
@@ -64,7 +61,7 @@ public class Account {
      */
     public LinkedHashSet<Email> getAllReceivedEmails() {
 
-    	// I think we should return a deep copy to avoid any possible tampering/loss of data
+    	// returns a deep copy to avoid any possible tampering/loss of data
     	LinkedHashSet<Email> receivedEmailsCopy = new LinkedHashSet<>();
     	for (Email email : receivedEmails) {
 			receivedEmailsCopy.add(new Email(email));
@@ -78,16 +75,20 @@ public class Account {
      * @param count number of emails to return
      * @return
      */
-    public LinkedHashSet<Email> getReceivedEmails(int count) {
-    	// I don't think I made this a deep copy but I tried
-    	
-    	LinkedHashSet<Email> copy = new LinkedHashSet<>();
+    public SortedSet<Email> getReceivedEmails(int count) {
+    	SortedSet<Email> copy = new TreeSet<>();
     	Iterator<Email> iter = receivedEmails.iterator();
     	for (int i = 0; i < count; i++) {
     		copy.add(new Email(iter.next()));
     	}
-        //TODO: get a collection of the last "count" emails added to the list
         return copy;
+    }
+
+    /**
+     * @return the number of emails currently held withing this account
+     */
+    public int getTotalEmailCount() {
+        return receivedEmails.size();
     }
 
     /**
@@ -106,6 +107,10 @@ public class Account {
         receivedEmails.remove(email);
     }
 
+    /**
+     * @param uuid the unique identifier of the email you wish to retrieve
+     * @return {@link Optional<Email>} of connected to the uuid
+     */
     public Optional<Email> getEmailFromUUID(String uuid) {
         return receivedEmails.stream().filter(email -> email.getUUID().equals(uuid)).findFirst();
     }
