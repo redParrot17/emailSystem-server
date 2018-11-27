@@ -240,8 +240,8 @@ public class EmailServer {
             String[] recipients = email.getRecipients();
 
             //TODO: Make every recipient all lowercase
-            for (String r : recipients) {
-            	r.toLowerCase();
+            for (int i = 0; i < recipients.length; i++) {
+            	recipients[i] = recipients[i].toLowerCase();
             }
             //TODO: Remove any duplicates from recipients
             HashSet<String> UniqueRecipients = new HashSet<String>();
