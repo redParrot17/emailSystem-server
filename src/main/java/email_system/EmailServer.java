@@ -244,7 +244,7 @@ public class EmailServer {
             			}
             		}
             	}
-            }
+            } 
             //TODO: For each unique recipient that exists within allAccounts, put a deep copy " Email newEmail = new Email( oldEmail ); " into the recipient's account
             //TODO: If the Account is located in loggedInAccounts, use the getConnectionFromAccount method to obtain the logged-in connection...
             //TODO: ...call the connection#replyEmail with email as the parameter
