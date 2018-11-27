@@ -100,7 +100,7 @@ public class Account {
 
     /**
      * Removes the specified email from the list
-     * @param email
+     * @param email the {@link Email} to be removed from this account
      */
     public void removeEmail(Email email) {
         receivedEmails.remove(email);
