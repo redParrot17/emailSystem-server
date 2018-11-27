@@ -235,16 +235,10 @@ public class EmailServer {
             	r.toLowerCase();
             }
             //TODO: Remove any duplicates from recipients
-            //Since it is a String array the size is immutable so the duplicate is set to null instead of removed.
-            for (int i = 0; i < recipients.length; i++) {
-            	for (int j = 0; j < recipients.length; j++) {
-            		if (j != i) {
-            			if (recipients[j] == recipients[i] && recipients[i] != null) {
-            				recipients[j] = null;
-            			}
-            		}
-            	}
-            } 
+            HashSet<String> UniqueRecipients = new HashSet<String>();
+            for (String r : recipients) {
+            	UniqueRecipients.add(r);
+            }
             //TODO: For each unique recipient that exists within allAccounts, put a deep copy " Email newEmail = new Email( oldEmail ); " into the recipient's account
             //TODO: If the Account is located in loggedInAccounts, use the getConnectionFromAccount method to obtain the logged-in connection...
             //TODO: ...call the connection#replyEmail with email as the parameter
