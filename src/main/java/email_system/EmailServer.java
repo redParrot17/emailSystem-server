@@ -139,7 +139,6 @@ public class EmailServer {
             	if (loggedInAccounts.contains(connection)) {
             		loggedInAccounts.remove(connection);
             	}
-            	
             	else {
             		return;
             	}
