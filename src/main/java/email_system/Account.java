@@ -64,7 +64,6 @@ public class Account {
      */
     public LinkedHashSet<Email> getAllReceivedEmails() {
 
-        //TODO: return all the emails. Should we return the actual ones or a deep copy?
     	// I think we should return a deep copy to avoid any possible tampering/loss of data
     	LinkedHashSet<Email> receivedEmailsCopy = new LinkedHashSet<>();
     	for (Email email : receivedEmails) {
@@ -85,7 +84,7 @@ public class Account {
     	LinkedHashSet<Email> copy = new LinkedHashSet<>();
     	Iterator<Email> iter = receivedEmails.iterator();
     	for (int i = 0; i < count; i++) {
-    		copy.add(iter.next());
+    		copy.add(new Email(iter.next()));
     	}
         //TODO: get a collection of the last "count" emails added to the list
         return copy;
