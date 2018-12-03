@@ -117,7 +117,7 @@ public class TcpServer implements AutoCloseable, Runnable {
      * @param timeout           how many milliseconds of zero activity until a client is automatically disconnected
      * @param backLog           how many connections are allowed
      * @param startImmediately  should the server immediately connect and start
-     * @throws ServerException
+     * @throws ServerException  if something went wrong while starting up the server
      */
     public TcpServer(int port, int timeout, int backLog, boolean startImmediately) throws ServerException {
         listenerManager = new ServerListenerManager();
@@ -139,7 +139,7 @@ public class TcpServer implements AutoCloseable, Runnable {
      * @param backLog           how many connections are allowed
      * @param startImmediately  should the server immediately connect and start
      * @param bindAddr          the local InetAddress the server will bind to. Leave null if you want to use "localhost"
-     * @throws ServerException
+     * @throws ServerException  if something went wrong while starting up the server
      */
     public TcpServer(int port, int timeout, int backLog, InetAddress bindAddr, boolean startImmediately) throws ServerException {
         listenerManager = new ServerListenerManager();
@@ -229,7 +229,9 @@ public class TcpServer implements AutoCloseable, Runnable {
     public void run() {
         try {
             while (alive) {
-                ClientConnection connection = new ClientConnection(this, serverSocket.accept(), timeout);
+                Socket socket = serverSocket.accept();
+                socket.setKeepAlive(true);
+                ClientConnection connection = new ClientConnection(this, socket, timeout);
                 try { threadPool.execute(connection);
                 } catch (Exception e) {
                     connection.close();
@@ -264,10 +266,10 @@ public class TcpServer implements AutoCloseable, Runnable {
     /**
      * Attempts to decrypt the encryption packet back into the original content
      *
-     * @param packet    the {@link EncryptionPacket} to be decrypted
-     * @param publicKey the {@link PublicKey} of the client that sent the packet
-     * @return          the original decrypted data
-     * @throws Exception
+     * @param packet     the {@link EncryptionPacket} to be decrypted
+     * @param publicKey  the {@link PublicKey} of the client that sent the packet
+     * @return           the original decrypted data
+     * @throws Exception if something went wrong internally during the decryption process
      */
     private String decryptEncryptionPacket(EncryptionPacket packet, PublicKey publicKey) throws Exception {
         return HybridCryptography.decrypt(packet, publicKey, serverKeys.getPrivate(), "eco.echotrace.77".getBytes());
@@ -276,9 +278,9 @@ public class TcpServer implements AutoCloseable, Runnable {
     /**
      * Attempts to decrypt the encryption packet back into the original content
      *
-     * @param json json data to be decrypted
-     * @param publicKey the {@link PublicKey} of the client that sent the packet
-     * @throws Exception
+     * @param json json  data to be decrypted
+     * @param publicKey  the {@link PublicKey} of the client that sent the packet
+     * @throws Exception if something went wrong internally during the decryption process
      */
     private String decryptEncryptionPacket(String json, PublicKey publicKey) throws Exception {
         EncryptionPacket packet = GSON.fromJson(json, EncryptionPacket.class);
@@ -483,6 +485,7 @@ public class TcpServer implements AutoCloseable, Runnable {
             } catch (SocketTimeoutException e) {
                 //System.out.println("[SOCKET][" + socket.getInetAddress().getHostAddress() + "](DISCONNECTED) socket connection timed out");
             } catch (SocketException e) {
+                //TODO: do something if the client disconnects?
                 if (!(e.getMessage().equals("Connection reset")) && !(e.getMessage().equals("Socket closed")))
                     e.printStackTrace();
             } catch (Exception e) {
