@@ -199,8 +199,7 @@ public class EmailServer {
                 	// retrieve the email from the Account if it exists
                 	if (account_deleted.getEmailFromUUID(command.getArguments()).isPresent()) {
                 		Email email = account_deleted.getEmailFromUUID(command.getArguments()).get();
-
-                		//TODO: Remove the email from the Account
+                        account_deleted.removeEmail(email);
                 	}
 
                     try { saveAllAccounts(ACCOUNT_FILENAME);
@@ -213,8 +212,7 @@ public class EmailServer {
                     // retrieve the email from the Account if it exists
                 	if (account_read.getEmailFromUUID(command.getArguments()).isPresent()) {
                 		Email email = account_read.getEmailFromUUID(command.getArguments()).get();
-
-                		//TODO: If the Email exists, call the Email#setHasOpened method and set it to true
+                		email.setHasOpened(true);
                 	}
 
                     try { saveAllAccounts(ACCOUNT_FILENAME);
@@ -249,11 +247,14 @@ public class EmailServer {
             	UniqueRecipients.add(r);
             }
 
-            //TODO: For each unique recipient that exists within allAccounts, put a deep copy " Email newEmail = new Email( oldEmail ); " into the recipient's account
-            //TODO: If the Account is located in loggedInAccounts, use the getConnectionFromAccount method to obtain the logged-in connection...
-            //TODO: ...call the connection#replyEmail with email as the parameter
-
-            // don't let this method throw an uncaught exception
+            allAccounts.stream().filter(account -> UniqueRecipients.contains(account.getEmail_address())).forEach(account -> {
+                account.addEmail(new Email(email));
+                if (loggedInAccounts.containsValue(account)) {
+                    getConnectionFromAccount(account).ifPresent(connection -> {
+                        connection.replyEmail(email);
+                    });
+                }
+            });
 
             try { saveAllAccounts(ACCOUNT_FILENAME);
             } catch (IOException e) { e.printStackTrace(); }
